@@ -28,3 +28,6 @@
 * You're tasked with identifying these high earners across all departments. Write a query to display the employee's name along with their department name and salary. In case of duplicates, sort the results of department name in ascending order, then by salary in descending order. If multiple employees have the same salary, then order them alphabetically.
 
 * Note: Ensure to utilize the appropriate ranking window function to handle duplicate salaries effectively.
+
+
+###### Line to merge this file

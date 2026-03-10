@@ -72,3 +72,5 @@ ORDER BY
     department_name ASC, 
     salary DESC, 
     name ASC;
+
+-- LINE TO MERGE SOLUTION
