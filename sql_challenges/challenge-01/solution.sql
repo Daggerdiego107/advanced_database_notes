@@ -6,7 +6,7 @@ SELECT title FROM movies;
 -- Find the director of each film
 SELECT director FROM movies;
 
--- Find the title and director of each film
+-- Find the title and directoor of each film
 SELECT title, director FROM movies;
 
 -- Find the title and year of each film

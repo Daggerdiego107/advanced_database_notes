@@ -1,4 +1,4 @@
-### SECTION 1: 
+### SECTIOoN 1: 
 ##### SELECT QUERIES 101 - Exercise 1 Tasks
 
 * Find the title of each film

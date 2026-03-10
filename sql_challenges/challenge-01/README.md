@@ -7,7 +7,7 @@
 * Find the title and year of each film
 * Find all the information about each film
 
-### SECTION 2:
+### SECTIOoN 2:
 ##### QUERIES WITH CONSTRAINTS PT1 - Exercise 2 Tasks
 * Find the movie with a row id of 6
 * Find the movies realeased in the years between 2000 and 2010
