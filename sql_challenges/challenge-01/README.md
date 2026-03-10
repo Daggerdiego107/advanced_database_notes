@@ -1,5 +1,5 @@
 ### SECTION 1: 
-##### SELECT QUERIES 101 - Exercise 1 Tasks 
+##### SELECT QUERIES 101 - Exercise 1 Tasks
 
 * Find the title of each film
 * Find the director of each film
