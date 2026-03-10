@@ -1,4 +1,4 @@
-### SECTIOoN 1: 
+### SECTION 1: 
 ##### SELECT QUERIES 101 - Exercise 1 Tasks
 
 * Find the title of each film
@@ -101,3 +101,5 @@
     ```sql
     SELECT city, population FROM north_american_cities WHERE country = "United States" ORDER BY population DESC LIMIT 2 OFFSET 2;
     ```
+
+###### Line to merge this file

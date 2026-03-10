@@ -6,7 +6,7 @@ SELECT title FROM movies;
 -- Find the director of each film
 SELECT director FROM movies;
 
--- Find the title and directoor of each film
+-- Find the title and director of each film
 SELECT title, director FROM movies;
 
 -- Find the title and year of each film
@@ -77,3 +77,5 @@ SELECT city FROM north_american_cities WHERE country = "Mexico" ORDER BY populat
 
 -- List the third and fourth largest cities (by population) in the United States and their population
 SELECT city, population FROM north_american_cities WHERE country = "United States" ORDER BY population DESC LIMIT 2 OFFSET 2;
+
+-- COMMENT TO MERGE THIS FILE

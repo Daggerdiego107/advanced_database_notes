@@ -7,7 +7,7 @@
 * Find the title and year of each film
 * Find all the information about each film
 
-### SECTIOoN 2:
+### SECTION 2:
 ##### QUERIES WITH CONSTRAINTS PT1 - Exercise 2 Tasks
 * Find the movie with a row id of 6
 * Find the movies realeased in the years between 2000 and 2010
@@ -35,3 +35,5 @@
 * List all the cities west of Chicago, ordered from west to east
 * List the two largest cities in Mexico (by population)
 * List the third and fourth largest cities (by population) in the United States and their population
+
+###### Line to merge this file
