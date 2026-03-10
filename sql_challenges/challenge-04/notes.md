@@ -1,4 +1,4 @@
-### Window Functions and Subqueries Challenge 
+### Window Functions and Subqueries Challenge
 
 #### FREESQL CHALLENGE
 ##### PARTITION BY 
