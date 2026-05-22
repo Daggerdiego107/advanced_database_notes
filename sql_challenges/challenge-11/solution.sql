@@ -1,6 +1,6 @@
 -- Lesson 03: SQLAlchemy ORM Models + Alembic Migrations
 
--- Schema equivalent to the ORM models
+-- Step 2: Schema equivalent to the ORM models
 BEGIN
 	EXECUTE IMMEDIATE 'DROP TABLE tasks PURGE';
 EXCEPTION WHEN OTHERS THEN NULL;
@@ -50,7 +50,7 @@ CREATE TABLE tasks (
 	CONSTRAINT tasks_user_fk FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
--- Example queries similar to the ORM traversal
+-- Step 3: Example queries similar to the ORM traversal
 SELECT t.id, t.name, u.full_name, u.username
 FROM teams t
 LEFT JOIN users u ON u.team_id = t.id
