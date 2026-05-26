@@ -32,7 +32,7 @@
 
 #### Step 2 — Sample Data
 
-- Insert at least 5 tickets and reassign one of them.
+- Insert at least 5 tickets and a reassignment history row.
 	#### SOLUTION:
 	```sql
 	INSERT INTO tickets (title, status, priority, created_at, assigned_to)
@@ -52,9 +52,11 @@
 
 	COMMIT;
 
-	UPDATE tickets
-	SET assigned_to = 106
-	WHERE ticket_id = 3;
+	INSERT INTO ticket_assignments (ticket_id, assigned_to, assigned_by, valid_from, valid_to)
+	VALUES (3, 103, NULL, TIMESTAMP '2026-05-03 11:00:00', TIMESTAMP '2026-05-04 09:00:00');
+
+	INSERT INTO ticket_assignments (ticket_id, assigned_to, assigned_by, valid_from, valid_to)
+	VALUES (3, 106, NULL, TIMESTAMP '2026-05-04 09:00:00', NULL);
 
 	COMMIT;
 	```
@@ -84,16 +86,62 @@
 	/
 	```
 
-#### Verification
+#### Step 4 — Data Warehouse Tables (Star Schema)
 
-- Query assignment history after reassignment.
+- Create `dim_agent` and `fact_ticket_daily`.
 	#### SOLUTION:
 	```sql
-	SELECT ta.ticket_id,
-	       ta.assigned_to,
-	       ta.valid_from,
-	       ta.valid_to
-	FROM   ticket_assignments ta
-	WHERE  ta.ticket_id = 3
-	ORDER  BY ta.valid_from;
+	BEGIN EXECUTE IMMEDIATE 'DROP TABLE fact_ticket_daily'; EXCEPTION WHEN OTHERS THEN NULL; END;
+	/
+	BEGIN EXECUTE IMMEDIATE 'DROP TABLE dim_agent'; EXCEPTION WHEN OTHERS THEN NULL; END;
+	/
+
+	CREATE TABLE dim_agent (
+		agent_key   NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		agent_name  VARCHAR2(100) NOT NULL,
+		team        VARCHAR2(50)  NOT NULL
+	);
+
+	CREATE TABLE fact_ticket_daily (
+		date_key         NUMBER      NOT NULL,
+		agent_key        NUMBER      NOT NULL REFERENCES dim_agent(agent_key),
+		status           VARCHAR2(20) NOT NULL,
+		priority         VARCHAR2(10) NOT NULL,
+		tickets_created  NUMBER      DEFAULT 0,
+		tickets_resolved NUMBER      DEFAULT 0,
+		CONSTRAINT uq_fact_ticket_daily UNIQUE (date_key, agent_key, status, priority)
+	);
+	```
+
+#### Step 5 — Populate dim_agent
+
+- Insert agents and teams.
+	#### SOLUTION:
+	```sql
+	INSERT INTO dim_agent (agent_name, team) VALUES ('Ava Brooks', 'Support');
+	INSERT INTO dim_agent (agent_name, team) VALUES ('Liam Ortiz', 'Support');
+	INSERT INTO dim_agent (agent_name, team) VALUES ('Mia Patel', 'Escalations');
+	INSERT INTO dim_agent (agent_name, team) VALUES ('Noah Kim', 'Escalations');
+	COMMIT;
+	```
+
+#### Step 6 — ETL Logic (Colab)
+
+- Use pandas to extract, resolve historical assignees at `created_at` and `resolved_at`,
+  aggregate by date/agent/status/priority, and load `fact_ticket_daily`.
+
+#### Step 7 — Verify
+
+- Join fact and dimension to show daily created/resolved counts.
+	#### SOLUTION:
+	```sql
+	SELECT d.agent_name,
+	       f.date_key,
+	       f.status,
+	       f.priority,
+	       f.tickets_created,
+	       f.tickets_resolved
+	FROM   fact_ticket_daily f
+	JOIN   dim_agent d ON d.agent_key = f.agent_key
+	ORDER  BY f.date_key, d.agent_name, f.status, f.priority;
 	```

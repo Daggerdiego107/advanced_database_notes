@@ -42,6 +42,14 @@ VALUES ('UI flicker on dashboard', 'open', 'low', TIMESTAMP '2026-05-05 13:00:00
 
 COMMIT;
 
+INSERT INTO ticket_assignments (ticket_id, assigned_to, assigned_by, valid_from, valid_to)
+VALUES (3, 103, NULL, TIMESTAMP '2026-05-03 11:00:00', TIMESTAMP '2026-05-04 09:00:00');
+
+INSERT INTO ticket_assignments (ticket_id, assigned_to, assigned_by, valid_from, valid_to)
+VALUES (3, 106, NULL, TIMESTAMP '2026-05-04 09:00:00', NULL);
+
+COMMIT;
+
 -- Step 3: Trigger to log assignment history
 CREATE OR REPLACE TRIGGER trg_ticket_assignment_log
 	AFTER INSERT OR UPDATE OF assigned_to ON tickets
@@ -62,18 +70,41 @@ BEGIN
 END;
 /
 
--- Reassign a ticket to test the trigger
-UPDATE tickets
-SET assigned_to = 106
-WHERE ticket_id = 3;
+-- Step 4: Data Warehouse Tables (Star Schema)
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE fact_ticket_daily'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE dim_agent'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+CREATE TABLE dim_agent (
+	agent_key   NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	agent_name  VARCHAR2(100) NOT NULL,
+	team        VARCHAR2(50)  NOT NULL
+);
 
+CREATE TABLE fact_ticket_daily (
+	date_key         NUMBER      NOT NULL,
+	agent_key        NUMBER      NOT NULL REFERENCES dim_agent(agent_key),
+	status           VARCHAR2(20) NOT NULL,
+	priority         VARCHAR2(10) NOT NULL,
+	tickets_created  NUMBER      DEFAULT 0,
+	tickets_resolved NUMBER      DEFAULT 0,
+	CONSTRAINT uq_fact_ticket_daily UNIQUE (date_key, agent_key, status, priority)
+);
+
+-- Step 5: Populate dim_agent
+INSERT INTO dim_agent (agent_name, team) VALUES ('Ava Brooks', 'Support');
+INSERT INTO dim_agent (agent_name, team) VALUES ('Liam Ortiz', 'Support');
+INSERT INTO dim_agent (agent_name, team) VALUES ('Mia Patel', 'Escalations');
+INSERT INTO dim_agent (agent_name, team) VALUES ('Noah Kim', 'Escalations');
 COMMIT;
 
--- Verify assignment history
-SELECT ta.ticket_id,
-	   ta.assigned_to,
-	   ta.valid_from,
-	   ta.valid_to
-FROM   ticket_assignments ta
-WHERE  ta.ticket_id = 3
-ORDER  BY ta.valid_from;
+-- Step 7: Verify (run after ETL load)
+SELECT d.agent_name,
+	   f.date_key,
+	   f.status,
+	   f.priority,
+	   f.tickets_created,
+	   f.tickets_resolved
+FROM   fact_ticket_daily f
+JOIN   dim_agent d ON d.agent_key = f.agent_key
+ORDER  BY f.date_key, d.agent_name, f.status, f.priority;
