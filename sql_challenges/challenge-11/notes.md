@@ -1,108 +1,89 @@
-### Lesson 03: SQLAlchemy ORM Models + Alembic Migrations
+### Lesson 03: SQLAlchemy ORM + Alembic Migrations
 
-#### Step 1: Install dependencies
+#### Step 0 — Setup Schema (FreeSQL)
 
-- Install SQLAlchemy and the Oracle driver.
+- Run the base schema and seed data in FreeSQL.
 	#### SOLUTION:
-	```bash
-	!pip install sqlalchemy oracledb -q
+	```sql
+	BEGIN EXECUTE IMMEDIATE 'DROP TABLE tasks PURGE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+	/
+	BEGIN EXECUTE IMMEDIATE 'DROP TABLE users PURGE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+	/
+	BEGIN EXECUTE IMMEDIATE 'DROP TABLE teams PURGE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+	/
+
+	CREATE TABLE teams (
+		id          NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		name        VARCHAR2(50)  NOT NULL UNIQUE,
+		description VARCHAR2(200),
+		created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE users (
+		id          NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		username    VARCHAR2(50)  NOT NULL UNIQUE,
+		email       VARCHAR2(100) NOT NULL,
+		full_name   VARCHAR2(100),
+		team_id     NUMBER,
+		created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		CONSTRAINT fk_users_team
+			FOREIGN KEY (team_id) REFERENCES teams(id)
+	);
+
+	CREATE TABLE tasks (
+		id           NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		title        VARCHAR2(200) NOT NULL,
+		description  VARCHAR2(1000),
+		status       VARCHAR2(20)  DEFAULT 'open',
+		assigned_to  NUMBER,
+		created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at   TIMESTAMP,
+		CONSTRAINT fk_tasks_user
+			FOREIGN KEY (assigned_to) REFERENCES users(id)
+	);
+
+	INSERT INTO teams (name, description) VALUES ('Engineering', 'Software development team');
+	INSERT INTO teams (name, description) VALUES ('Product', 'Product management team');
+
+	INSERT INTO users (username, email, full_name, team_id)
+		VALUES ('alice_dev', 'alice@example.com', 'Alice Smith', 1);
+	INSERT INTO users (username, email, full_name, team_id)
+		VALUES ('bob_dev', 'bob@example.com', 'Bob Jones', 1);
+	INSERT INTO users (username, email, full_name, team_id)
+		VALUES ('carol_pm', 'carol@example.com', 'Carol White', 2);
+
+	INSERT INTO tasks (title, description, status, assigned_to)
+		VALUES ('Fix login bug', 'Users cannot log in with SSO', 'open', 1);
+	INSERT INTO tasks (title, description, status, assigned_to)
+		VALUES ('Design new dashboard', 'Create mockups for analytics page', 'in_progress', 3);
+	INSERT INTO tasks (title, description, status, assigned_to)
+		VALUES ('Update dependencies', 'Upgrade numpy and pandas', 'open', 2);
+
+	COMMIT;
 	```
 
-#### Step 2: Define ORM models
+#### Exercise 1 — Model Design
 
-- Create `Team`, `User`, and `Task` with relationships and columns.
+- Add a `Comment` ORM model with required fields and relationships.
+
+#### Exercise 2 — Migration Creation
+
+- Autogenerate and inspect a migration for the `comments` table.
+
+#### Exercise 3 — CRUD Challenge
+
+- Use ORM-only CRUD to create a team, user, tasks, update, and delete.
+
+#### Exercise 4 — Migration Rollback
+
+- Roll back the last migration and note what happens.
+
+#### Exercise 5 — Concept Check
+
+- Answer the conceptual questions briefly.
 	#### SOLUTION:
-	```python
-	from sqlalchemy import (
-		create_engine, Column, Integer, String,
-		Text, ForeignKey, DateTime, func
-	)
-	from sqlalchemy.orm import declarative_base, relationship, Session
-
-	Base = declarative_base()
-
-	class Team(Base):
-		__tablename__ = "teams"
-		id          = Column(Integer, primary_key=True)
-		name        = Column(String(50), nullable=False, unique=True)
-		description = Column(String(200))
-		created_at  = Column(DateTime, server_default=func.current_timestamp())
-		users = relationship("User", back_populates="team")
-		priority = Column(String(20), default="medium")
-		due_date = Column(DateTime)
-		tags = Column(String(500))
-
-	class User(Base):
-		__tablename__ = "users"
-		id         = Column(Integer, primary_key=True)
-		username   = Column(String(50), nullable=False, unique=True)
-		email      = Column(String(100), nullable=False)
-		full_name  = Column(String(100))
-		team_id    = Column(Integer, ForeignKey("teams.id"))
-		created_at = Column(DateTime, server_default=func.current_timestamp())
-		team  = relationship("Team", back_populates="users")
-		tasks = relationship("Task", back_populates="assignee")
-
-	class Task(Base):
-		__tablename__ = "tasks"
-		id           = Column(Integer, primary_key=True)
-		title        = Column(String(200), nullable=False)
-		description  = Column(String(1000))
-		status       = Column(String(20), default="open")
-		assigned_to  = Column(Integer, ForeignKey("users.id"))
-		created_at   = Column(DateTime, server_default=func.current_timestamp())
-		updated_at   = Column(DateTime, onupdate=func.current_timestamp())
-		assignee = relationship("User", back_populates="tasks")
-	```
-
-#### Step 3: Connect and query with ORM
-
-- Configure FreeSQL credentials and query teams/users/tasks.
-	#### SOLUTION:
-	```python
-	USERNAME = ""
-	PASSWORD = ""
-	DSN = "tcps://db.freesql.com:2484/23ai_34ui2"
-
-	engine = create_engine(
-		"oracle+oracledb://:@",
-		connect_args={
-			"user": USERNAME,
-			"password": PASSWORD,
-			"dsn": DSN,
-		},
-	)
-
-	with Session(engine) as session:
-		print("Teams:")
-		for team in session.query(Team).all():
-			for user in team.users:
-				pass
-
-		print("Tasks with assignees:")
-		for task in session.query(Task).all():
-			assignee = task.assignee.full_name if task.assignee else "Unassigned"
-	```
-
-#### Step 4: Alembic migrations (pure Python)
-
-- Install Alembic.
-	#### SOLUTION:
-	```bash
-	!pip install sqlalchemy oracledb alembic -q
-	```
-
-- Initialize Alembic, autogenerate a revision, apply it, and roll back one migration.
-	#### SOLUTION:
-	```python
-	from alembic.config import Config
-	from alembic import command
-
-	alembic_cfg = Config()
-	alembic_cfg.set_main_option("script_location", "/content/alembic")
-	alembic_cfg.set_main_option("sqlalchemy.url", "oracle+oracledb://:@")
-
-	command.revision(alembic_cfg, autogenerate=True, message="Initial schema")
-	command.upgrade(alembic_cfg, "head")
-	command.downgrade(alembic_cfg, "-1")
-	```
+	1. ORM vs raw SQL: ORM gives safer, reusable models, relationships, and DB-agnostic queries; raw SQL is more manual and error-prone for complex apps.
+	2. Migrations: They track schema changes over time and keep environments consistent.
+	3. Rollback: Use it when a migration introduces a bug or invalid schema change.
+	4. `add()` vs `commit()`: `add()` stages objects in the session; `commit()` writes changes to the DB.
+	5. Relationships: They simplify joins and navigation between related rows in code.

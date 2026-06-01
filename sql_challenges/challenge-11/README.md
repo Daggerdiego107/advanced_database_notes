@@ -1,23 +1,25 @@
-### Lesson 03: SQLAlchemy ORM Models + Alembic Migrations
+### Lesson 03: SQLAlchemy ORM + Alembic Migrations
 
-#### Step 1: Install dependencies
+#### Step 0 — Setup Schema (FreeSQL)
 
-- Install SQLAlchemy and the Oracle driver.
+- Run the SQL from `todays_challenge.md` to create `teams`, `users`, and `tasks`.
 
-#### Step 2: Define ORM models
+#### Exercise 1 — Model Design
 
-- Create `Team`, `User`, and `Task` with relationships.
-- Add the new `Team` columns (`priority`, `due_date`, `tags`).
+- Add a `Comment` ORM model with the required fields and relationships.
 
-#### Step 3: Connect and query with ORM
+#### Exercise 2 — Migration Creation
 
-- Configure FreeSQL credentials.
-- Query teams, users, and tasks via relationships.
+- Autogenerate a migration for the new `Comment` table and inspect it.
 
-#### Step 4: Alembic migrations (pure Python)
+#### Exercise 3 — CRUD Challenge
 
-- Install Alembic.
-- Initialize the Alembic config and `env.py`.
-- Autogenerate a revision and inspect it.
-- Apply and then roll back one migration.
-- Clean up generated migration files.
+- Use the ORM to create a team, user, and tasks, then update and delete.
+
+#### Exercise 4 — Migration Rollback
+
+- Programmatically roll back the last migration.
+
+#### Exercise 5 — Concept Check
+
+- Answer the short conceptual questions in the notebook/notes.
