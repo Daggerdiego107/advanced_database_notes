@@ -65,18 +65,95 @@
 #### Exercise 1 — Model Design
 
 - Add a `Comment` ORM model with required fields and relationships.
+	#### SOLUTION:
+	```python
+	class Comment(Base):
+		__tablename__ = "comments"
+		id         = Column(Integer, primary_key=True)
+		task_id    = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False)
+		user_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
+		content    = Column(Text, nullable=False)
+		created_at = Column(DateTime, server_default=func.current_timestamp())
+
+		task = relationship("Task", back_populates="comments")
+		author = relationship("User", back_populates="comments")
+
+	# Add relationships on Task and User
+	Task.comments = relationship("Comment", back_populates="task", cascade="all, delete-orphan")
+	User.comments = relationship("Comment", back_populates="author")
+	```
+	Questions:
+	1. `Comment` should relate to `Task` (many comments per task) and `User` (many comments per user).
+	2. `Task` should have `comments` for easy navigation.
+	3. Use `ondelete="CASCADE"` and `cascade="all, delete-orphan"` to remove comments with a task.
 
 #### Exercise 2 — Migration Creation
 
 - Autogenerate and inspect a migration for the `comments` table.
+	#### SOLUTION:
+	```python
+	command.revision(
+		alembic_cfg,
+		autogenerate=True,
+		message="add comments table"
+	)
+
+	import glob
+	migration_files = sorted(
+		glob.glob('/content/project/alembic/versions/*.py')
+	)
+
+	for f in migration_files:
+		print(f)
+
+	latest = migration_files[-1]
+	with open(latest) as f:
+		print(f.read())
+	```
+	Questions:
+	1. `upgrade()` applies schema changes (creates `comments`).
+	2. `downgrade()` reverts changes (drops `comments`).
+	3. Downgrading removes the table and data in it.
 
 #### Exercise 3 — CRUD Challenge
 
 - Use ORM-only CRUD to create a team, user, tasks, update, and delete.
+	#### SOLUTION:
+	```python
+	with Session(engine) as session:
+		team = Team(name="DevOps", description="Infrastructure and reliability")
+		user = User(username="diana_ops", email="diana@example.com", full_name="Diana Ops", team=team)
+		
+		task1 = Task(title="Set up monitoring", description="Add alerts", status="open", assignee=user)
+		task2 = Task(title="Rotate secrets", description="Update secrets", status="open", assignee=user)
+		task3 = Task(title="Patch servers", description="Monthly patch", status="open", assignee=user)
+
+		session.add_all([team, user, task1, task2, task3])
+		session.commit()
+
+		count = session.query(Task).filter(Task.assignee == user).count()
+		print(f"Task count: {count}")
+
+		# Close one task
+		task1.status = "completed"
+		session.commit()
+
+		# Delete lowest priority task (example: delete by title)
+		lowest = session.query(Task).filter(Task.title == "Patch servers").one()
+		session.delete(lowest)
+		session.commit()
+	```
 
 #### Exercise 4 — Migration Rollback
 
 - Roll back the last migration and note what happens.
+	#### SOLUTION:
+	```python
+	command.downgrade(alembic_cfg, "-1")
+	```
+	Questions:
+	1. The column/table from the last migration is removed.
+	2. Any data in that column/table is lost after rollback.
 
 #### Exercise 5 — Concept Check
 
