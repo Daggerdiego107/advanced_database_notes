@@ -1,45 +1,41 @@
-### Lesson 07: KPI Dashboards with Plotly + Oracle
+### Lesson 07: KPI Dashboards — Class Exercises
 
-#### Step 1: Install dependencies
+#### Step 1 — Enrich Schema
 
-- Install `oracledb`, `sqlalchemy`, `pandas`, and `plotly`.
+- Run `01_enrich_schema.sql` to add analytics columns and constraints.
 
-#### Step 2: Connect to Oracle FreeSQL
+#### Step 2 — Seed Dashboard Data
 
-- Configure credentials and test the connection with a simple query.
+- Run `02_seed_dashboard_data.sql` to load realistic tasks for KPIs.
 
-#### Step 3: KPI 1 — Tasks by Status (Pie Chart)
+#### Exercise 1 — Team Velocity
 
-- Aggregate by `status` and compute percent of total.
+- Define the KPI contract and write the team velocity query.
 
-#### Step 4: KPI 2 — Tasks per Team (Bar Chart)
+#### Exercise 2 — On-Time Delivery Rate
 
-- Join teams, users, and tasks to count tasks per team.
+- Define “on-time” and calculate delivery rate by priority.
 
-#### Step 5: KPI 3 — Workload per User (Horizontal Bar)
+#### Exercise 3 — Improve Tasks per Team
 
-- Count open/in-progress/blocked tasks per user.
+- Add total/active/completion_rate and a health score.
 
-#### Step 6: KPI 4 & 5 — Completion Rate + Avg Resolution
+#### Exercise 4 — Improve Avg Resolution Time
 
-- Compute completion rate and average resolution time in hours.
+- Break down by priority, add median, min, max, and SLA target flag.
 
-#### Step 7: KPI 6 — Tasks Created per Day (Line Chart)
+#### Exercise 5 — Improve Overdue Tasks
 
-- Group by `TRUNC(created_at)` to trend daily task creation.
+- Build a detailed report with severity and a summary row.
 
-#### Step 8: KPI 7 — Overdue Tasks (Alert Table)
+#### Exercise 6 — Fix Productivity Score
 
-- Filter non-completed tasks past their `due_date`.
+- Explain what’s wrong and write a better metric.
 
-#### Step 9: KPI 8 — Priority Distribution (Stacked Bar)
+#### Exercise 7 — Fix Team Efficiency
 
-- Count statuses by priority to visualize distribution.
+- Explain what’s wrong and write a meaningful ratio.
 
-#### Step 10: Compose the Full Dashboard
+#### Exercise 8 — Fix Urgency Index
 
-- Combine the key charts into a single Plotly dashboard.
-
-#### Exercise
-
-- Add a **Tasks completed per day** chart and record the SQL in the challenge files.
+- Explain what’s wrong and create a weighted urgency score.
