@@ -2,24 +2,99 @@
 
 #### Step 0 — Setup Schema (FreeSQL)
 
-- Run the SQL from `todays_challenge.md` to create `teams`, `users`, and `tasks`.
+- Run the SQL in `todays_challenge.sql` to create `teams`, `users`, and `tasks`.
 
-#### Exercise 1 — Model Design
+#### Exercise 1 — Model Design (10 min)
 
-- Add a `Comment` ORM model with the required fields and relationships.
+Scenario:
+Your task system needs a `comments` table. Each comment belongs to one task and one user.
 
-#### Exercise 2 — Migration Creation
+Tasks:
+- Create a new Colab cell and write the `Comment` model.
+- Required fields: `id`, `task_id`, `user_id`, `content`, `created_at`.
 
-- Autogenerate a migration for the new `Comment` table and inspect it.
+Questions:
+1. What relationships should `Comment` have?
+2. Should `Task` have a `comments` relationship?
+3. What should happen to comments when a task is deleted?
 
-#### Exercise 3 — CRUD Challenge
+#### Exercise 2 — Migration Creation (10 min)
 
-- Use the ORM to create a team, user, and tasks, then update and delete.
+Scenario:
+You added the `Comment` model. Now generate a migration programmatically.
 
-#### Exercise 4 — Migration Rollback
+Tasks:
+- Run:
+	```python
+	command.revision(
+			alembic_cfg,
+			autogenerate=True,
+			message="add comments table"
+	)
+	```
+- Inspect the migration files:
+	```python
+	import glob
 
-- Programmatically roll back the last migration.
+	migration_files = sorted(
+			glob.glob('/content/project/alembic/versions/*.py')
+	)
 
-#### Exercise 5 — Concept Check
+	for f in migration_files:
+			print(f)
+	```
+- Open the latest migration:
+	```python
+	latest = migration_files[-1]
 
-- Answer the short conceptual questions in the notebook/notes.
+	with open(latest) as f:
+			print(f.read())
+	```
+
+Questions:
+1. What does `upgrade()` do?
+2. What does `downgrade()` do?
+3. What happens if you downgrade this migration?
+
+Bonus:
+- Add a CHECK constraint so `content != ''`.
+
+#### Exercise 3 — CRUD Challenge (10 min)
+
+Scenario:
+Write a script that:
+1. Creates a team called "DevOps"
+2. Creates a user "diana_ops"
+3. Creates 3 tasks with different priorities
+4. Prints task count
+5. Closes one task
+6. Deletes the lowest priority task
+
+Requirements:
+- Use ORM only
+- Use relationships
+- Print output clearly
+
+#### Exercise 4 — Migration Rollback (5 min)
+
+Scenario:
+You added a bad column: `estimated_hours`. The migration has already been applied.
+
+Task:
+- Roll back the migration programmatically.
+	```python
+	command.downgrade(alembic_cfg, "-1")
+	```
+
+Questions:
+1. What happens to the column?
+2. What happens to the data?
+
+#### Exercise 5 — Concept Check (5 min)
+
+Answer briefly:
+1. Why use ORM instead of raw SQL?
+2. Why use migrations?
+3. When would you rollback?
+4. Difference between `add()` and `commit()`?
+5. Why are relationships useful?
